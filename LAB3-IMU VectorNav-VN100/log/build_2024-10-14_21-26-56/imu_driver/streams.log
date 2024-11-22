@@ -1,0 +1,22 @@
+[0.380s] Invoking command in '/home/shrirag10/LAB3/src/imu_driver': PYTHONPATH=/home/shrirag10/LAB3/build/imu_driver/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/shrirag10/LAB3/install/imu_driver/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../../build/imu_driver build --build-base /home/shrirag10/LAB3/build/imu_driver/build install --record /home/shrirag10/LAB3/build/imu_driver/install.log --single-version-externally-managed install_data
+[0.512s] running egg_info
+[0.512s] writing ../../build/imu_driver/imu_driver.egg-info/PKG-INFO
+[0.512s] writing dependency_links to ../../build/imu_driver/imu_driver.egg-info/dependency_links.txt
+[0.512s] writing entry points to ../../build/imu_driver/imu_driver.egg-info/entry_points.txt
+[0.512s] writing requirements to ../../build/imu_driver/imu_driver.egg-info/requires.txt
+[0.512s] writing top-level names to ../../build/imu_driver/imu_driver.egg-info/top_level.txt
+[0.514s] reading manifest file '../../build/imu_driver/imu_driver.egg-info/SOURCES.txt'
+[0.514s] adding license file 'LICENSE'
+[0.514s] writing manifest file '../../build/imu_driver/imu_driver.egg-info/SOURCES.txt'
+[0.514s] running build
+[0.514s] running build_py
+[0.514s] running install
+[0.515s] running install_lib
+[0.515s] running install_data
+[0.516s] running install_egg_info
+[0.517s] removing '/home/shrirag10/LAB3/install/imu_driver/lib/python3.10/site-packages/imu_driver-0.0.0-py3.10.egg-info' (and everything under it)
+[0.517s] Copying ../../build/imu_driver/imu_driver.egg-info to /home/shrirag10/LAB3/install/imu_driver/lib/python3.10/site-packages/imu_driver-0.0.0-py3.10.egg-info
+[0.517s] running install_scripts
+[0.530s] Installing imu script to /home/shrirag10/LAB3/install/imu_driver/lib/imu_driver
+[0.531s] writing list of installed files to '/home/shrirag10/LAB3/build/imu_driver/install.log'
+[0.544s] Invoked command in '/home/shrirag10/LAB3/src/imu_driver' returned '0': PYTHONPATH=/home/shrirag10/LAB3/build/imu_driver/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/shrirag10/LAB3/install/imu_driver/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../../build/imu_driver build --build-base /home/shrirag10/LAB3/build/imu_driver/build install --record /home/shrirag10/LAB3/build/imu_driver/install.log --single-version-externally-managed install_data

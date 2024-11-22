@@ -1,0 +1,6 @@
+{
+  "package_name": "gps_msgs",
+  "non_idl_tuples": [
+    "/home/shrirag10/LAB4/src/gps_msgs:msg/GPSmsg.msg"
+  ]
+}

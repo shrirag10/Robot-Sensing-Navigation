@@ -1,0 +1,6 @@
+Invoking command in '/home/shrirag10/LAB4/src/build/gps_msgs': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake /home/shrirag10/LAB4/src/gps_msgs -DCMAKE_INSTALL_PREFIX=/home/shrirag10/LAB4/src/install/gps_msgs
+Invoked command in '/home/shrirag10/LAB4/src/build/gps_msgs' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake /home/shrirag10/LAB4/src/gps_msgs -DCMAKE_INSTALL_PREFIX=/home/shrirag10/LAB4/src/install/gps_msgs
+Invoking command in '/home/shrirag10/LAB4/src/build/gps_msgs': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --build /home/shrirag10/LAB4/src/build/gps_msgs -- -j16 -l16
+Invoked command in '/home/shrirag10/LAB4/src/build/gps_msgs' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --build /home/shrirag10/LAB4/src/build/gps_msgs -- -j16 -l16
+Invoking command in '/home/shrirag10/LAB4/src/build/gps_msgs': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --install /home/shrirag10/LAB4/src/build/gps_msgs
+Invoked command in '/home/shrirag10/LAB4/src/build/gps_msgs' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --install /home/shrirag10/LAB4/src/build/gps_msgs

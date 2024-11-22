@@ -1,0 +1,6 @@
+Invoking command in '/home/shrirag10/LAB4/build/imu_msgs': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake /home/shrirag10/LAB4/src/imu_msgs -DCMAKE_INSTALL_PREFIX=/home/shrirag10/LAB4/install/imu_msgs
+Invoked command in '/home/shrirag10/LAB4/build/imu_msgs' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake /home/shrirag10/LAB4/src/imu_msgs -DCMAKE_INSTALL_PREFIX=/home/shrirag10/LAB4/install/imu_msgs
+Invoking command in '/home/shrirag10/LAB4/build/imu_msgs': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --build /home/shrirag10/LAB4/build/imu_msgs -- -j16 -l16
+Invoked command in '/home/shrirag10/LAB4/build/imu_msgs' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --build /home/shrirag10/LAB4/build/imu_msgs -- -j16 -l16
+Invoking command in '/home/shrirag10/LAB4/build/imu_msgs': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --install /home/shrirag10/LAB4/build/imu_msgs
+Invoked command in '/home/shrirag10/LAB4/build/imu_msgs' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --install /home/shrirag10/LAB4/build/imu_msgs

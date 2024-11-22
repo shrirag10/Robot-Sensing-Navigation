@@ -1,0 +1,6 @@
+{
+  "package_name": "imu_msgs",
+  "non_idl_tuples": [
+    "/home/shrirag10/LAB3/src/imu_msgs:msg/IMUmsg.msg"
+  ]
+}

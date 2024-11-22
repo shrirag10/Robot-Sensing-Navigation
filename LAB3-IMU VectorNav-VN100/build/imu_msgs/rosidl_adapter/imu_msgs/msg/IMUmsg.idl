@@ -1,0 +1,21 @@
+// generated from rosidl_adapter/resource/msg.idl.em
+// with input from imu_msgs/msg/IMUmsg.msg
+// generated code does not contain a copyright notice
+
+#include "sensor_msgs/msg/Imu.idl"
+#include "sensor_msgs/msg/MagneticField.idl"
+#include "std_msgs/msg/Header.idl"
+
+module imu_msgs {
+  module msg {
+    struct IMUmsg {
+      std_msgs::msg::Header header;
+
+      sensor_msgs::msg::Imu imu;
+
+      sensor_msgs::msg::MagneticField mag_field;
+
+      string raw;
+    };
+  };
+};
