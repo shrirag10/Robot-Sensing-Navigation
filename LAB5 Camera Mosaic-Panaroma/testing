@@ -1,0 +1,255 @@
+import cv2
+import numpy as np
+from matplotlib import pyplot as plt
+import os
+import glob
+
+class ImageStitcher:
+    def __init__(self):
+        pass
+        
+    def load_images_from_directory(self, directory_path, file_extensions=('*.jpg', '*.jpeg', '*.png')):
+        """Load all images from the specified directory."""
+        images = []
+        image_paths = []
+        
+        for ext in file_extensions:
+            image_paths.extend(glob.glob(os.path.join(directory_path, ext)))
+        
+        image_paths.sort()
+        
+        if not image_paths:
+            raise ValueError(f"No images found in {directory_path}")
+            
+        print(f"Found {len(image_paths)} images:")
+        for path in image_paths:
+            print(f"Loading: {os.path.basename(path)}")
+            img = cv2.imread(path)
+            if img is None:
+                print(f"Warning: Could not load {path}")
+                continue
+            # Resize images to reduce processing time
+            img = cv2.resize(img, (0, 0), fx=0.5, fy=0.5)
+            images.append(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+            
+        return images, image_paths
+
+    def detect_harris_corners(self, img, k=0.04, threshold=0.01, blockSize=2, max_corners=1000):
+        """
+        Detect Harris corners in the image with a limit on the number of corners.
+        
+        Args:
+            img: Input image
+            k: Harris detector free parameter
+            threshold: Threshold for selecting strong corners
+            blockSize: Neighborhood size for corner detection
+            max_corners: Maximum number of corners to return
+        """
+        # Convert image to grayscale
+        gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+        gray = np.float32(gray)
+        
+        # Apply Harris corner detection
+        harris_corners = cv2.cornerHarris(gray, blockSize=blockSize, ksize=3, k=k)
+        
+        # Dilate corner image to enhance corner points
+        harris_corners = cv2.dilate(harris_corners, None)
+        
+        # Get corner coordinates sorted by response strength
+        corner_responses = harris_corners.flatten()
+        corner_coordinates = np.array(list(np.ndindex(harris_corners.shape)))
+        
+        # Sort corners by response strength
+        sorted_indices = np.argsort(-corner_responses)
+        threshold_value = threshold * harris_corners.max()
+        
+        # Filter corners above threshold and take top max_corners
+        valid_corners = []
+        valid_indices = []
+        
+        for idx in sorted_indices:
+            if corner_responses[idx] > threshold_value:
+                y, x = corner_coordinates[idx]
+                # Ensure minimum distance between corners (5 pixels)
+                if not any(np.sqrt((x - xc)**2 + (y - yc)**2) < 5 for xc, yc in valid_corners):
+                    valid_corners.append((x, y))
+                    valid_indices.append(idx)
+                    if len(valid_corners) >= max_corners:
+                        break
+        
+        corners = np.array(valid_corners, dtype=np.float32)
+        return corners, harris_corners
+
+    def match_corners(self, corners1, corners2, img1, img2, window_size=11):
+        """
+        Match corners between two images using normalized cross-correlation.
+        """
+        matches = []
+        gray1 = cv2.cvtColor(img1, cv2.COLOR_RGB2GRAY)
+        gray2 = cv2.cvtColor(img2, cv2.COLOR_RGB2GRAY)
+        
+        for i, corner1 in enumerate(corners1):
+            x1, y1 = int(corner1[0]), int(corner1[1])
+            best_match = None
+            best_score = -1
+            
+            # Extract patch around corner in first image
+            patch1 = gray1[max(0, y1-window_size):min(gray1.shape[0], y1+window_size+1),
+                          max(0, x1-window_size):min(gray1.shape[1], x1+window_size+1)]
+            
+            for j, corner2 in enumerate(corners2):
+                x2, y2 = int(corner2[0]), int(corner2[1])
+                
+                # Extract patch around corner in second image
+                patch2 = gray2[max(0, y2-window_size):min(gray2.shape[0], y2+window_size+1),
+                              max(0, x2-window_size):min(gray2.shape[1], x2+window_size+1)]
+                
+                # Check if patches are the same size
+                if patch1.shape == patch2.shape and patch1.shape[0] > 0 and patch1.shape[1] > 0:
+                    # Calculate normalized cross-correlation
+                    score = cv2.matchTemplate(patch1, patch2, cv2.TM_CCORR_NORMED)[0, 0]
+                    
+                    if score > best_score and score > 0.9:  # Increased threshold for better matches
+                        best_score = score
+                        best_match = j
+            
+            if best_match is not None:
+                matches.append((i, best_match, best_score))
+        
+        # Sort matches by score and keep the best ones
+        matches.sort(key=lambda x: x[2], reverse=True)
+        matches = matches[:min(50, len(matches))]  # Keep top 50 matches
+        
+        return matches
+
+    def find_homography(self, corners1, corners2, matches):
+        """Find homography matrix between two images."""
+        if len(matches) < 4:
+            return None, None
+        
+        src_pts = np.float32([corners1[m[0]] for m in matches])
+        dst_pts = np.float32([corners2[m[1]] for m in matches])
+        
+        H, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 5.0)
+        return H, mask
+
+    def warp_images(self, img1, img2, H):
+        """Warp img2 onto img1 using homography matrix H."""
+        rows1, cols1 = img1.shape[:2]
+        rows2, cols2 = img2.shape[:2]
+        
+        pts1 = np.float32([[0, 0], [0, rows1], [cols1, rows1], [cols1, 0]]).reshape(-1, 1, 2)
+        pts2 = np.float32([[0, 0], [0, rows2], [cols2, rows2], [cols2, 0]]).reshape(-1, 1, 2)
+        
+        pts2_transformed = cv2.perspectiveTransform(pts2, H)
+        pts = np.concatenate((pts1, pts2_transformed), axis=0)
+        
+        [xmin, ymin] = np.int32(pts.min(axis=0).ravel() - 0.5)
+        [xmax, ymax] = np.int32(pts.max(axis=0).ravel() + 0.5)
+        t = [-xmin, -ymin]
+        
+        Ht = np.array([[1, 0, t[0]], [0, 1, t[1]], [0, 0, 1]])
+        
+        result = cv2.warpPerspective(img2, Ht.dot(H), (xmax-xmin, ymax-ymin))
+        result[t[1]:rows1+t[1], t[0]:cols1+t[0]] = img1
+        
+        return result
+
+    def visualize_corners(self, img, corners, harris_resp):
+        """Visualize detected Harris corners."""
+        vis_img = img.copy()
+        
+        # Normalize Harris response for visualization
+        harris_resp_norm = cv2.normalize(harris_resp, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
+        harris_resp_color = cv2.applyColorMap(harris_resp_norm, cv2.COLORMAP_JET)
+        
+        # Draw corners
+        for x, y in corners:
+            cv2.circle(vis_img, (int(x), int(y)), 3, (0, 255, 0), -1)
+        
+        plt.figure(figsize=(20, 5))
+        plt.subplot(131), plt.imshow(img), plt.title('Original Image')
+        plt.subplot(132), plt.imshow(harris_resp_norm), plt.title('Harris Response')
+        plt.subplot(133), plt.imshow(vis_img), plt.title(f'Detected Corners ({len(corners)})')
+        plt.show()
+
+    def stitch_images(self, images, visualize=False):
+        """Stitch multiple images together using Harris corners."""
+        if not images:
+            raise ValueError("No images provided for stitching")
+            
+        result = images[0]
+        
+        for i in range(1, len(images)):
+            print(f"\nProcessing image pair {i}/{len(images)-1}")
+            
+            # Detect Harris corners
+            corners1, harris_resp1 = self.detect_harris_corners(result)
+            corners2, harris_resp2 = self.detect_harris_corners(images[i])
+            
+            print(f"Found {len(corners1)} corners in first image and {len(corners2)} in second image")
+            
+            if visualize:
+                self.visualize_corners(result, corners1, harris_resp1)
+                self.visualize_corners(images[i], corners2, harris_resp2)
+            
+            # Match corners
+            matches = self.match_corners(corners1, corners2, result, images[i])
+            print(f"Found {len(matches)} matches")
+            
+            if len(matches) < 4:
+                print(f"Not enough matches found between result and image {i}")
+                continue
+            
+            # Find homography
+            H, mask = self.find_homography(corners1, corners2, matches)
+            
+            if H is None:
+                print(f"Could not find homography for image {i}")
+                continue
+                
+            # Warp and blend images
+            result = self.warp_images(result, images[i], H)
+            
+        return result
+
+def main():
+    directory_path = "C:\\Users\\ragsh\\Desktop\\FALL 24\\RSN\\LAB5\\data"
+    
+    if not os.path.exists(directory_path):
+        print(f"Error: Directory '{directory_path}' does not exist")
+        return
+        
+    stitcher = ImageStitcher()
+    
+    try:
+        print("\nLoading images...")
+        images, image_paths = stitcher.load_images_from_directory(directory_path)
+        
+        if not images:
+            print("No images were successfully loaded")
+            return
+            
+        print(f"\nStarting stitching process with {len(images)} images...")
+        
+        visualize = input("Would you like to visualize the corner detection? (y/n): ").lower().startswith('y')
+        
+        panorama = stitcher.stitch_images(images, visualize=visualize)
+        
+        plt.figure(figsize=(20, 10))
+        plt.imshow(panorama)
+        plt.title('Final Panorama')
+        plt.axis('off')
+        plt.show()
+        
+        save = input("\nWould you like to save the panorama? (y/n): ").lower().startswith('y')
+        if save:
+            output_path = os.path.join(directory_path, 'panorama_result.jpg')
+            cv2.imwrite(output_path, cv2.cvtColor(panorama, cv2.COLOR_RGB2BGR))
+            print(f"Panorama saved as: {output_path}")
+        
+    except Exception as e:
+        print(f"Error during stitching: {str(e)}")
+
+if __name__ == "__main__":
+    main()
